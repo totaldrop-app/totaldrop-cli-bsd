@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 The TotalDrop Contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Isolated sub-platform x CPU architecture recipe manifest (ADR 0020).
+
+unit_id = "cli-freebsd-pkg-riscv64"
+repository = "totaldrop-cli-bsd"
+platform = "cli"
+format = "freebsd-pkg"
+arch = "riscv64"
+version = "0.3.0-beta.6"
+rust_target = "riscv64gc-unknown-freebsd"
+runner = "ubuntu-latest"
+tag_prefix = "cli-freebsd-pkg-riscv64-v"
+workflow = ".github/workflows/pkg-freebsd-pkg-riscv64.yml"
+delegate = "target-freebsd-x86_64/rc.d/totaldrop"
+artifact_name = "totaldrop-freebsd-0.3.0-beta.6-riscv64.pkg"
+spdx_license = "GPL-3.0-or-later"
+reproducible = true
+provenance = "sigstore-oidc"
+checksums_file = "SHA256SUMS"
+l10n_locales = 35

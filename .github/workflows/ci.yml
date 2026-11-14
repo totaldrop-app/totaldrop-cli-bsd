@@ -77,6 +77,8 @@ jobs:
           for script in target-*/*.sh; do
             bash -n "$script"
           done
+      - name: Verify 9 isolated sub-platform x CPU units
+        run: python3 tools/verify-subplatforms.py
 
   deny:
     name: Dependencies (cargo-deny)
