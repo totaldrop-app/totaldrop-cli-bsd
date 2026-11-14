@@ -1,0 +1,5 @@
+@bin bin/totaldrop
+share/doc/totaldrop/
+share/doc/totaldrop/Apache-2.0.txt
+share/doc/totaldrop/GPL-3.0-or-later.txt
+share/doc/totaldrop/MIT.txt

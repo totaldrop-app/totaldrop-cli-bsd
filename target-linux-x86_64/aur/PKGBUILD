@@ -1,0 +1,44 @@
+# Maintainer: TotalDrop <hello@totaldrop.app>
+#
+# AUR source PKGBUILD for totaldrop-cli on x86_64 (ADR 0015).
+
+pkgname=totaldrop-cli
+_ver=0.2.0-beta.5
+pkgver=${_ver//-/_}
+pkgrel=1
+pkgdesc='Send files straight to another device, end-to-end encrypted (CLI)'
+arch=('x86_64')
+url='https://totaldrop.app'
+license=('GPL-3.0-or-later' 'MIT OR Apache-2.0')
+depends=('gcc-libs' 'glibc')
+makedepends=('cargo')
+provides=('totaldrop-cli')
+options=('!lto' '!debug')
+source=("$pkgname-$_ver.tar.gz::https://github.com/totaldrop-app/totaldrop/archive/refs/tags/cli-v$_ver.tar.gz")
+sha256sums=('REPLACE_WITH_TAG_ARCHIVE_SHA256')
+
+prepare() {
+  cd "$srcdir/totaldrop-cli-v$_ver"
+  export RUSTUP_TOOLCHAIN=${RUSTUP_TOOLCHAIN:-stable}
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+  cd "$srcdir/totaldrop-cli-v$_ver"
+  export RUSTUP_TOOLCHAIN=${RUSTUP_TOOLCHAIN:-stable}
+  export CARGO_TARGET_DIR=target
+  cargo build --frozen --release -p totaldrop-cli
+}
+
+check() {
+  cd "$srcdir/totaldrop-cli-v$_ver"
+  export RUSTUP_TOOLCHAIN=${RUSTUP_TOOLCHAIN:-stable}
+  cargo test --frozen --release -p totaldrop-proto -p totaldrop-l10n
+}
+
+package() {
+  cd "$srcdir/totaldrop-cli-v$_ver"
+  install -Dm755 target/release/totaldrop "$pkgdir/usr/bin/totaldrop"
+  install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" \
+    LICENSES/GPL-3.0-or-later.txt LICENSES/MIT.txt LICENSES/Apache-2.0.txt
+}

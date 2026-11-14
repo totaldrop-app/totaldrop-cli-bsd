@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0-beta.5",
+  "description": "Send files straight to another device, end-to-end encrypted.",
+  "homepage": "https://totaldrop.app",
+  "license": "GPL-3.0-or-later,MIT,Apache-2.0",
+  "architecture": {
+    "arm64": {
+      "url": "https://github.com/totaldrop-app/totaldrop/releases/download/cli-v0.2.0-beta.5/totaldrop-cli-0.2.0-beta.5-aarch64-pc-windows-msvc.zip",
+      "hash": "REPLACE_WITH_CI_WINDOWS_ARM64_ZIP_SHA256",
+      "extract_dir": "totaldrop-cli-0.2.0-beta.5-aarch64-pc-windows-msvc"
+    }
+  },
+  "bin": "totaldrop.exe",
+  "checkver": {
+    "url": "https://api.github.com/repos/totaldrop-app/totaldrop/releases",
+    "regex": "cli-v([\\d.a-z-]+)"
+  },
+  "autoupdate": {
+    "architecture": {
+      "arm64": {
+        "url": "https://github.com/totaldrop-app/totaldrop/releases/download/cli-v$version/totaldrop-cli-$version-aarch64-pc-windows-msvc.zip",
+        "extract_dir": "totaldrop-cli-$version-aarch64-pc-windows-msvc"
+      }
+    },
+    "hash": {
+      "url": "https://github.com/totaldrop-app/totaldrop/releases/download/cli-v$version/SHA256SUMS"
+    }
+  }
+}

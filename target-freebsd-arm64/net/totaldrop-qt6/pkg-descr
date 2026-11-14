@@ -1,0 +1,3 @@
+TotalDrop desktop interface for FreeBSD ARM64 Wayland compositors (KDE Plasma
+Wayland, Sway, Hyprland, and River), built natively with Qt 6, QML, and cxx-qt
+over the shared Rust TotalDrop engine.

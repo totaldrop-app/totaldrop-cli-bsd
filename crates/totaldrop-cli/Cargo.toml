@@ -1,0 +1,33 @@
+[package]
+name = "totaldrop-cli"
+description = "TotalDrop command-line client"
+license = "GPL-3.0-or-later"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[[bin]]
+name = "totaldrop"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.6.7", features = ["derive", "env", "string"] }
+# Where the download folder is (XDG user dirs), for Flatpak (#350).
+dirs = "7"
+tokio = { version = "1.54.1", features = ["rt-multi-thread", "signal"] }
+totaldrop-core = { version = "0.2.0-beta.5", path = "../totaldrop-core" }
+totaldrop-l10n = { version = "0.2.0-beta.5", path = "../totaldrop-l10n" }
+totaldrop-proto = { version = "0.2.0-beta.5", path = "../totaldrop-proto" }
+
+[dev-dependencies]
+futures-util = { version = "0.3.34", default-features = false, features = ["sink", "std"] }
+getrandom = "0.4.3"
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread"] }
+totaldrop-relay = { version = "0.1.0-beta.1", path = "../../server/totaldrop-relay" }
+totaldrop-rendezvous = { version = "0.1.0-beta.1", path = "../../server/totaldrop-rendezvous" }
+tokio-tungstenite = { version = "0.30.0", default-features = false, features = ["connect"] }
+
+[lints]
+workspace = true

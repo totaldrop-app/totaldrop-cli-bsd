@@ -1,0 +1,23 @@
+# Maintainer: TotalDrop <hello@totaldrop.app>
+#
+# AUR binary PKGBUILD for totaldrop-bin on x86_64 (ADR 0015).
+# Unpacks and installs the CI-built Arch Linux `.pkg.tar.zst` release artifact.
+
+pkgname=totaldrop-bin
+_ver=0.2.0-beta.5
+pkgver=${_ver//-/_}
+pkgrel=1
+pkgdesc='Send files straight to another device, end-to-end encrypted (CI-built binary)'
+arch=('x86_64')
+url='https://totaldrop.app'
+license=('GPL-3.0-or-later' 'MIT OR Apache-2.0')
+depends=('gtk3' 'libayatana-appindicator' 'webkit2gtk-4.1')
+provides=('totaldrop')
+conflicts=('totaldrop')
+options=('!strip' '!debug')
+source=("totaldrop-${pkgver}-1-x86_64.pkg.tar.zst::https://github.com/totaldrop-app/totaldrop/releases/download/v${_ver}/totaldrop-${pkgver}-1-x86_64.pkg.tar.zst")
+sha256sums=('REPLACE_WITH_CI_ARCH_PKG_SHA256')
+
+package() {
+  cp -a "$srcdir/usr" "$pkgdir/usr"
+}

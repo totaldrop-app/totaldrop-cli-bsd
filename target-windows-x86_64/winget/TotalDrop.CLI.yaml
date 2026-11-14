@@ -1,0 +1,8 @@
+# Created using komac / winget-pkgs schema v1.10.0 (ADR 0015)
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.version.1.10.0.schema.json
+
+PackageIdentifier: TotalDrop.CLI
+PackageVersion: 0.2.0-beta.5
+DefaultLocale: en-US
+ManifestType: version
+ManifestVersion: 1.10.0

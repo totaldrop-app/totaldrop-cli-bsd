@@ -1,0 +1,44 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2026 The TotalDrop Contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# PROVIDE: totaldrop
+# REQUIRE: NETWORKING
+# KEYWORD: shutdown
+#
+# TrueNAS CORE & FreeBSD Jail rc.d service script for headless TotalDrop drops.
+# Add to /etc/rc.conf or Jail sysrc:
+#   totaldrop_enable="YES"
+#   totaldrop_user="totaldrop"
+#   totaldrop_inbox="/mnt/tank/totaldrop"
+#   totaldrop_code=""
+#   totaldrop_flags="--yes"
+
+. /etc/rc.subr
+
+name="totaldrop"
+rcvar="totaldrop_enable"
+
+load_rc_config $name
+
+: ${totaldrop_enable:="NO"}
+: ${totaldrop_user:="nobody"}
+: ${totaldrop_inbox:="/var/db/totaldrop"}
+: ${totaldrop_code:=""}
+: ${totaldrop_flags:="--yes"}
+
+pidfile="/var/run/${name}.pid"
+procname="/usr/local/bin/totaldrop"
+command="/usr/sbin/daemon"
+start_precmd="${name}_prestart"
+
+totaldrop_prestart()
+{
+	if [ -z "${totaldrop_code}" ]; then
+		err 1 "Set totaldrop_code in rc.conf before starting ${name} in receive mode."
+	fi
+	install -d -o "${totaldrop_user}" -m 0750 "${totaldrop_inbox}"
+	command_args="-f -p ${pidfile} -u ${totaldrop_user} ${procname} receive ${totaldrop_flags} --out ${totaldrop_inbox} ${totaldrop_code}"
+}
+
+run_rc_command "$1"

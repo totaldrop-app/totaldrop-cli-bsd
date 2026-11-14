@@ -1,0 +1,7 @@
+TotalDrop is a command-line file and text transfer utility with end-to-end
+encryption and zero account requirements.
+
+Peers exchange a short human-readable transfer code over CPace PAKE, establish
+an authenticated QUIC connection with Noise XXpsk3 + post-quantum ML-KEM-768,
+display four shared verification words, and verify every transferred file with
+BLAKE3 before placing it in the target folder.

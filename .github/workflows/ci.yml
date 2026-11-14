@@ -1,0 +1,171 @@
+# Hardened CI workflow for totaldrop-cli-bsd: multi-OS x86_64/ARM64 CLI matrix,
+# FreeBSD and RISC-V cross-target verification, rc.d and packaging script syntax
+# checks, dependency auditing, REUSE 3.3 licensing, and secret scanning.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  cli-matrix:
+    name: CLI (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest, windows-11-arm]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the pinned Rust toolchain
+        shell: bash
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: Format
+        shell: bash
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        shell: bash
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Test
+        shell: bash
+        env:
+          TOTALDROP_REQUIRE_IPV6: "1"
+        run: cargo test --workspace --locked
+
+  bsd-and-riscv-targets:
+    name: BSD & RISC-V Cross-Targets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install RISC-V C cross-compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc-riscv64-linux-gnu
+      - name: Install the pinned Rust toolchain and BSD/RISC-V targets
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustup target add x86_64-unknown-freebsd riscv64gc-unknown-linux-gnu
+      - name: Check core protocol crates on FreeBSD (x86_64-unknown-freebsd)
+        run: cargo check --locked --target x86_64-unknown-freebsd -p totaldrop-crypto -p totaldrop-proto -p totaldrop-l10n
+      - name: Check core protocol crates on RISC-V (riscv64gc-unknown-linux-gnu)
+        env:
+          CARGO_TARGET_RISCV64GC_UNKNOWN_LINUX_GNU_LINKER: riscv64-linux-gnu-gcc
+        run: cargo check --locked --target riscv64gc-unknown-linux-gnu -p totaldrop-crypto -p totaldrop-proto -p totaldrop-l10n
+      - name: Validate FreeBSD rc.d scripts and target packaging scripts
+        run: |
+          for rc_script in target-freebsd-*/rc.d/totaldrop; do
+            sh -n "$rc_script"
+          done
+          for script in target-*/*.sh; do
+            bash -n "$script"
+          done
+
+  deny:
+    name: Dependencies (cargo-deny)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          rust-version: "1.99.1"
+
+  reuse:
+    name: Licenses (REUSE)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Source files carry SPDX lines
+        run: ./tools/check-spdx.sh
+      - name: reuse lint
+        run: >-
+          docker run --rm --volume "$PWD:/data"
+          fsfe/reuse:6.2.0@sha256:85462a75c0f8efda09ddd190b92816b70e7662577c8427429e11e1b9f25a992e
+          lint
+
+  secrets:
+    name: Secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Commits to scan
+        id: range
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          MERGE_GROUP_BASE: ${{ github.event.merge_group.base_sha }}
+        run: |
+          case $EVENT in
+            pull_request) base=HEAD^1 ;;
+            push) base=$BEFORE ;;
+            merge_group) base=$MERGE_GROUP_BASE ;;
+            *) base= ;;
+          esac
+          if [ -n "$base" ] && git cat-file -e "$base^{commit}" 2>/dev/null; then
+            range=$base..HEAD
+          else
+            base=HEAD range=HEAD
+          fi
+          echo "Scanning $range"
+          { echo "BASE=$base"; echo "RANGE=$range"; } >>"$GITHUB_ENV"
+      - name: No signing keys, key.properties or .gitleaksignore
+        run: |
+          found=$(
+            { git ls-files -z
+              git -c core.quotePath=false log --format= --name-only -z --no-renames --diff-filter=d "$RANGE"
+            } | grep -ziE '(^|/)(key\.properties|\.gitleaksignore)$|\.(jks|keystore|p12|pfx|pepk)$' | tr '\0' '\n' | sort -u
+          )
+          if [ -n "$found" ]; then
+            printf '%s\n' "$found"
+            echo "::error::Signing keys, key.properties, and .gitleaksignore must never be committed."
+            exit 1
+          fi
+      - name: gitleaks
+        if: ${{ !cancelled() && steps.range.outcome == 'success' }}
+        run: |
+          cfg=$RUNNER_TEMP/gitleaks
+          mkdir -p "$cfg"
+          if ! git show "$BASE:.gitleaks.toml" >"$cfg/gitleaks.toml" 2>/dev/null; then
+            printf '[extend]\nuseDefault = true\n' >"$cfg/gitleaks.toml"
+          fi
+          docker run --rm --volume "$PWD/.git:/repo/.git:ro" --volume "$cfg:/cfg:ro" \
+            ghcr.io/gitleaks/gitleaks:v8.30.0@sha256:691af3c7c5a48b16f187ce3446d5f194838f91238f27270ed36eef6359a574d9 \
+            git --no-banner --redact --verbose --config /cfg/gitleaks.toml \
+            --gitleaks-ignore-path /cfg --ignore-gitleaks-allow \
+            --log-opts="--text $RANGE" /repo
+
+  gate:
+    name: CI
+    if: always()
+    needs: [cli-matrix, bsd-and-riscv-targets, deny, reuse, secrets]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<<"$NEEDS"
+          jq -e 'all(.[]; .result == "success")' <<<"$NEEDS" >/dev/null

@@ -1,0 +1,14 @@
+/target
+*.swp
+.DS_Store
+
+# Built CLI archives and packages
+dist/
+*.tar.gz
+*.tar.zst
+*.zip
+*.pkg
+
+# Python bytecode
+__pycache__/
+*.pyc

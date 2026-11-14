@@ -1,0 +1,19 @@
+# Created using komac / winget-pkgs schema v1.10.0 (ADR 0015)
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
+
+PackageIdentifier: TotalDrop.CLI
+PackageVersion: 0.2.0-beta.5
+InstallerType: zip
+NestedInstallerType: portable
+NestedInstallerFiles:
+  - RelativeFilePath: totaldrop-cli-0.2.0-beta.5-x86_64-pc-windows-msvc\totaldrop.exe
+    PortableCommandAlias: totaldrop
+Commands:
+  - totaldrop
+ReleaseDate: 2026-11-14
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/totaldrop-app/totaldrop/releases/download/cli-v0.2.0-beta.5/totaldrop-cli-0.2.0-beta.5-x86_64-pc-windows-msvc.zip
+    InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+ManifestType: installer
+ManifestVersion: 1.10.0

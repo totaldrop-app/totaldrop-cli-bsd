@@ -1,0 +1,30 @@
+# Maintainer: TotalDrop <hello@totaldrop.app>
+#
+# Arch Linux RISC-V PKGBUILD for totaldrop-cli (riscv64).
+
+pkgname=totaldrop-cli
+_ver=0.2.0-beta.5
+pkgver=${_ver//-/_}
+pkgrel=1
+pkgdesc='Send files straight to another device, end-to-end encrypted (RISC-V 64 CLI)'
+arch=('riscv64')
+url='https://totaldrop.app'
+license=('GPL-3.0-or-later' 'MIT OR Apache-2.0')
+depends=('gcc-libs' 'glibc')
+makedepends=('cargo')
+options=('!lto' '!debug')
+source=("$pkgname-$_ver.tar.gz::https://github.com/totaldrop-app/totaldrop/archive/refs/tags/cli-v$_ver.tar.gz")
+sha256sums=('REPLACE_WITH_TAG_ARCHIVE_SHA256')
+
+build() {
+  cd "$srcdir/totaldrop-cli-v$_ver"
+  export RUSTUP_TOOLCHAIN=${RUSTUP_TOOLCHAIN:-stable}
+  cargo build --locked --release -p totaldrop-cli
+}
+
+package() {
+  cd "$srcdir/totaldrop-cli-v$_ver"
+  install -Dm755 target/release/totaldrop "$pkgdir/usr/bin/totaldrop"
+  install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" \
+    LICENSES/GPL-3.0-or-later.txt LICENSES/MIT.txt LICENSES/Apache-2.0.txt
+}

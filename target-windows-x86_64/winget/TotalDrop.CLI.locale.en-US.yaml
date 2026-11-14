@@ -1,0 +1,29 @@
+# Created using komac / winget-pkgs schema v1.10.0 (ADR 0015)
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
+
+PackageIdentifier: TotalDrop.CLI
+PackageVersion: 0.2.0-beta.5
+PackageLocale: en-US
+Publisher: TotalDrop
+PublisherUrl: https://totaldrop.app
+PublisherSupportUrl: https://github.com/totaldrop-app/totaldrop/issues
+PackageName: TotalDrop CLI
+PackageUrl: https://totaldrop.app
+License: GPL-3.0-or-later AND (MIT OR Apache-2.0)
+LicenseUrl: https://github.com/totaldrop-app/totaldrop/tree/main/LICENSES
+ShortDescription: Send files straight to another device, end-to-end encrypted.
+Description: >-
+  TotalDrop CLI sends files, folders, and short text snippets directly between
+  devices with authenticated PAKE (CPace + ML-KEM-768 hybrid post-quantum key
+  agreement), ChaCha20-Poly1305 encryption, QUIC direct paths, and automatic
+  encrypted relay fallback.
+Moniker: totaldrop-cli
+Tags:
+  - cli
+  - encryption
+  - file-transfer
+  - p2p
+  - pake
+  - quic
+ManifestType: defaultLocale
+ManifestVersion: 1.10.0

@@ -1,0 +1,8 @@
+TotalDrop sends files, folders, and short texts straight from one device to
+another with end-to-end encryption on 64-bit ARM FreeBSD workstations, SBCs,
+and jails.
+
+Both peers authenticate a short human-readable transfer code using CPace PAKE,
+establish a QUIC session protected by Noise XXpsk3 hybridized with post-quantum
+ML-KEM-768, verify four shared authentication words, and check every file on
+arrival with BLAKE3 before placing it on disk.
