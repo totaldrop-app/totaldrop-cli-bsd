@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest, windows-11-arm]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-15, windows-latest, windows-11-arm]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -47,6 +47,11 @@ jobs:
         env:
           TOTALDROP_REQUIRE_IPV6: "1"
         run: cargo test --workspace --locked
+      - name: CLI smoke check (--version & --help)
+        shell: bash
+        run: |
+          cargo run --locked -p totaldrop-cli -- --version
+          cargo run --locked -p totaldrop-cli -- --help >/dev/null
 
   bsd-and-riscv-targets:
     name: BSD & RISC-V Cross-Targets
@@ -77,8 +82,10 @@ jobs:
           for script in target-*/*.sh; do
             bash -n "$script"
           done
-      - name: Verify 9 isolated sub-platform x CPU units
-        run: python3 tools/verify-subplatforms.py
+      - name: Verify 9 isolated sub-platform x CPU units & cross-platform packaging parity
+        run: |
+          python3 tools/verify-subplatforms.py
+          python3 tools/verify-cli-bsd-packaging.py
 
   deny:
     name: Dependencies (cargo-deny)
